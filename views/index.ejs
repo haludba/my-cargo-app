@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Добавить Груз</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="d-flex justify-content-between mb-4">
+            <button class="btn btn-primary" onclick="window.location.href='/add-cargo'">Добавить груз</button>
+            <button class="btn btn-primary" onclick="window.location.href='/my-cargos'">Мои грузы</button>
+        </div>
+
+        <form action="/add-cargo" method="POST">
+            <!-- Поля формы -->
+            <div class="form-group">
+                <label for="origin">Откуда (Город):</label>
+                <input type="text" class="form-control" id="origin" name="origin" required>
+            </div>
+            <div class="form-group">
+                <label for="destination">Куда (Город):</label>
+                <input type="text" class="form-control" id="destination" name="destination" required>
+            </div>
+            <div class="form-group">
+                <label for="cargo_name">Название груза:</label>
+                <input type="text" class="form-control" id="cargo_name" name="cargo_name" required>
+            </div>
+            
+            <!-- Кнопки для модальных окон -->
+            <div class="form-group">
+                <button type="button" class="btn btn-secondary btn-block mb-3" data-toggle="modal" data-target="#paymentMethodModal">Способ оп. <span id="selectedPaymentMethod"></span></button>
+                <button type="button" class="btn btn-secondary btn-block mb-3" data-toggle="modal" data-target="#whenModal">Когда <span id="selectedWhen"></span></button>
+                <button type="button" class="btn btn-secondary btn-block mb-3" data-toggle="modal" data-target="#bodyTypeModal">Тип кузова <span id="selectedBodyType"></span></button>
+            </div>
+            
+            <!-- Контакты -->
+            <div class="form-group">
+                <label for="phone">Номер телефона:</label>
+                <input type="text" class="form-control" id="phone" name="phone" required>
+            </div>
+            <div class="form-group">
+                <label for="telegram">Telegram:</label>
+                <input type="text" class="form-control" id="telegram" name="telegram">
+            </div>
+
+            <!-- Комментарий -->
+            <div class="form-group">
+                <label for="comment">Комментарий для дальнобойщиков:</label>
+                <textarea class="form-control" id="comment" name="comment"></textarea>
+            </div>
+
+            <!-- Кнопка отправки формы -->
+            <button type="submit" class="btn btn-success btn-block">Опубликовать</button>
+        </form>
+    </div>
+
+    <!-- Модальные окна -->
+    <!-- Модальное окно "Когда" -->
+    <div class="modal fade" id="whenModal" tabindex="-1" role="dialog" aria-labelledby="whenModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="whenModalLabel">Выбрать время</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="loadStartDate">С даты:</label>
+                        <input type="date" class="form-control" id="loadStartDate">
+                    </div>
+                    <div class="form-group">
+                        <label for="loadEndDate">По дате:</label>
+                        <input type="date" class="form-control" id="loadEndDate">
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="always">
+                        <label class="form-check-label" for="always">Постоянно</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="cargoReady">
+                        <label class="form-check-label" for="cargoReady">Груз готов</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+                    <button type="button" class="btn btn-primary" id="confirmWhen">Подтвердить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно "Способ оплаты" -->
+    <div class="modal fade" id="paymentMethodModal" tabindex="-1" role="dialog" aria-labelledby="paymentMethodModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="paymentMethodModalLabel">Выбрать способ оплаты</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Закрыть">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <!-- Опция наличными с выбором единицы измерения -->
+                    <div class="form-group">
+                        <label for="cashPayment">Наличные:</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="cashPayment" placeholder="Введите сумму">
+                            <div class="input-group-append">
+                                <select class="form-control" id="cashUnit">
+                                    <option value="₽/">₽/</option>
+                                    <option value="₽/километр">₽/километр</option>
+                                    <option value="₽/тонна">₽/тонна</option>
+                                    <option value="₽/час">₽/час</option>
+                                    <option value="₽/куб">₽/куб</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+    
+                    <!-- Опции для других способов оплаты -->
+                    <div class="form-group">
+                        <label for="ndcPayment">С НДС:</label>
+                        <input type="number" class="form-control" id="ndcPayment" placeholder="Введите сумму">
+                    </div>
+                    <div class="form-group">
+                        <label for="noNdcPayment">Без НДС:</label>
+                        <input type="number" class="form-control" id="noNdcPayment" placeholder="Введите сумму">
+                    </div>
+    
+                    <!-- Прочие опции -->
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="To-the-map">
+                        <label class="form-check-label" for="To the map">На карту</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="requestRate">
+                        <label class="form-check-label" for="requestRate">Запрос ставки</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="prepayment">
+                        <label class="form-check-label" for="prepayment">Предоплата</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="bargain">
+                        <label class="form-check-label" for="bargain">Возможен торг</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="payOnUnload">
+                        <label class="form-check-label" for="payOnUnload">Оплата на выгрузке</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="bankDays">
+                        <label class="form-check-label" for="bankDays">Через несколько банковских дней</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+                    <button type="button" class="btn btn-primary" id="confirmPaymentMethod">Подтвердить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Модальное окно "Тип кузова" -->
+    <div class="modal fade" id="bodyTypeModal" tabindex="-1" role="dialog" aria-labelledby="bodyTypeModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="bodyTypeModalLabel">Выбрать тип кузова</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-check">
+                        <input type="radio" class="form-check-input" name="bodyType" value="Бортовой" id="bodyType1">
+                        <label class="form-check-label" for="bodyType1">Бортовой</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="radio" class="form-check-input" name="bodyType" value="Тент" id="bodyType2">
+                        <label class="form-check-label" for="bodyType2">Тент</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="radio" class="form-check-input" name="bodyType" value="Рефрижиротор" id="bodyType3">
+                        <label class="form-check-label" for="bodyType3">Рефрижиротор</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="radio" class="form-check-input" name="bodyType" value="Самосвал" id="bodyType4">
+                        <label class="form-check-label" for="bodyType4">Самосвал</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="radio" class="form-check-input" name="bodyType" value="Контейнеровоз" id="bodyType5">
+                        <label class="form-check-label" for="bodyType5">Контейнеровоз</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="radio" class="form-check-input" name="bodyType" value="Цистерна" id="bodyType6">
+                        <label class="form-check-label" for="bodyType6">Цистерна</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="radio" class="form-check-input" name="bodyType" value="Автовоз" id="bodyType7">
+                        <label class="form-check-label" for="bodyType7">Автовоз</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="radio" class="form-check-input" name="bodyType" value="Платформа" id="bodyType8">
+                        <label class="form-check-label" for="bodyType8">Платформа</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+                    <button type="button" class="btn btn-primary" id="confirmBodyType">Подтвердить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // Подсказки по адресу с Ahunter API
+        $(document).ready(function() {
+            $('#origin, #destination').on('input', function() {
+                let query = $(this).val();
+                let inputField = $(this);
+                if (query.length > 2) {
+                    $.ajax({
+                        url: 'https://ahunter.ru/site/suggest/address',
+                        method: 'GET',
+                        dataType: 'json',
+                        data: {
+                            query: query,
+                            output: 'json'
+                        },
+                        success: function(response) {
+                            if (response.suggestions) {
+                                showSuggestions(inputField, response.suggestions);
+                            }
+                        }
+                    });
+                } else {
+                    $('.suggestion-list').remove();
+                }
+            });
+
+            $(document).on('click', function(e) {
+                if (!$(e.target).closest('.suggestion-list, #origin, #destination').length) {
+                    $('.suggestion-list').remove();
+                }
+            });
+        });
+
+        function showSuggestions(input, suggestions) {
+            let suggestionList = $('<ul class="suggestion-list"></ul>');
+            suggestions.forEach(suggestion => {
+                let item = $('<li></li>').text(suggestion.value);
+                item.on('click', function () {
+                    input.val(suggestion.value);
+                    $('.suggestion-list').remove();
+                });
+                suggestionList.append(item);
+            });
+            $('.suggestion-list').remove();
+            input.after(suggestionList);
+        }
+
+        // Модальное окно "Когда"
+        $('#confirmWhen').click(function() {
+            let loadStartDate = $('#loadStartDate').val();
+            let loadEndDate = $('#loadEndDate').val();
+            let always = $('#always').prop('checked');
+            let cargoReady = $('#cargoReady').prop('checked');
+            let result = '';
+            if (always) result = 'Загрузка: постоянно';
+            else if (cargoReady) result = 'Загрузка: груз готов';
+            else if (loadStartDate && loadEndDate) result = `Загрузка: с ${loadStartDate} по ${loadEndDate}`;
+            $('#selectedWhen').text(result);
+            $('#whenModal').modal('hide');
+        });
+
+        // Модальное окно "Способ оплаты"
+        $('#confirmPaymentMethod').click(function() {
+            let result = [];
+            let cashPayment = $('#cashPayment').val();
+            let cashUnit = $('#cashUnit').val();
+            if (cashPayment) result.push(`Наличные: ${cashPayment} ${cashUnit}`);
+            let ndcPayment = $('#ndcPayment').val();
+            if (ndcPayment) result.push(`С НДС: ${ndcPayment} ₽`);
+            let noNdcPayment = $('#noNdcPayment').val();
+            if (noNdcPayment) result.push(`Без НДС: ${noNdcPayment} ₽`);
+            if ($('#To-the-map').prop('checked')) result.push('На карту');
+            if ($('#requestRate').prop('checked')) result.push('Запрос ставки');
+            if ($('#prepayment').prop('checked')) result.push('Предоплата');
+            if ($('#bargain').prop('checked')) result.push('Возможен торг');
+            if ($('#payOnUnload').prop('checked')) result.push('Оплата на выгрузке');
+            if ($('#bankDays').prop('checked')) result.push('Через несколько банковских дней');
+            $('#selectedPaymentMethod').text(result.join(', '));
+            $('#paymentMethodModal').modal('hide');
+        });
+
+        // Модальное окно "Тип кузова"
+        $('#confirmBodyType').click(function() {
+            let bodyType = $('input[name="bodyType"]:checked').val();
+            $('#selectedBodyType').text(bodyType);
+            $('#bodyTypeModal').modal('hide');
+        });
+    </script>
+</body>
+</html>

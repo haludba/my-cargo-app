@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мои Грузы</title>
+</head>
+<body>
+    <h1>Мои Грузы</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Название груза</th>
+                <th>Откуда</th>
+                <th>Куда</th>
+                <th>Вес</th>
+                <th>Объем</th>
+                <th>Дата загрузки</th>
+                <th>Дата выгрузки</th>
+                <th>Способ оплаты</th>
+                <th>Комментарий</th>
+                <th>Статус</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% cargos.forEach(function(cargo) { %>
+                <tr>
+                    <td><%= cargo.cargo_name %></td>
+                    <td><%= cargo.origin %></td>
+                    <td><%= cargo.destination %></td>
+                    <td><%= cargo.weight %></td>
+                    <td><%= cargo.volume %></td>
+                    <td><%= cargo.load_date %></td>
+                    <td><%= cargo.unload_date %></td>
+                    <td><%= cargo.payment_method %></td>
+                    <td><%= cargo.comment %></td>
+                    <td>
+                        <form action="/toggle-status/<%= cargo.id %>" method="POST">
+                            <input type="hidden" name="status" value="<%= cargo.status === 'online' ? 'on' : 'off' %>">
+                            <input type="checkbox" name="status" <%= cargo.status === 'online' ? 'checked' : '' %> onchange="this.form.submit()">
+                            <label for="status"><%= cargo.status === 'online' ? 'Online' : 'Offline' %></label>
+                        </form>
+                    </td>
+                    <td>
+                        <a href="/edit-cargo/<%= cargo.id %>">Редактировать</a>
+                        <form action="/delete-cargo/<%= cargo.id %>" method="POST" style="display:inline;">
+                            <button type="submit">Удалить</button>
+                        </form>
+                    </td>
+                </tr>
+            <% }) %>
+        </tbody>
+    </table>
+
+    <a href="/">Добавить Груз</a>
+</body>
+</html>

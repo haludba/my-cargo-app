@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Редактировать Груз</title>
+</head>
+<body>
+    <h2>Редактировать Груз</h2>
+    <form action="/edit-cargo/<%= cargo.id %>" method="POST">
+        <label for="cargo_name">Название груза</label>
+        <input type="text" id="cargo_name" name="cargo_name" value="<%= cargo.cargo_name %>" required>
+
+        <label for="origin">Откуда (Город)</label>
+        <input type="text" id="origin" name="origin" value="<%= cargo.origin %>" required>
+
+        <label for="destination">Куда (Город)</label>
+        <input type="text" id="destination" name="destination" value="<%= cargo.destination %>" required>
+
+        <label for="weight">Вес (тонны)</label>
+        <input type="number" id="weight" name="weight" value="<%= cargo.weight %>" required>
+
+        <label for="volume">Объем (м³)</label>
+        <input type="number" id="volume" name="volume" value="<%= cargo.volume %>" required>
+
+        <label for="load_date">Дата загрузки</label>
+        <input type="date" id="load_date" name="load_date" value="<%= cargo.load_date %>" required>
+
+        <label for="unload_date">Дата выгрузки</label>
+        <input type="date" id="unload_date" name="unload_date" value="<%= cargo.unload_date %>" required>
+
+        <label for="payment_method">Способ оплаты</label>
+        <select id="payment_method" name="payment_method" required>
+            <option value="Наличными" <%= cargo.payment_method === 'Наличными' ? 'selected' : '' %>>Наличными</option>
+            <option value="На карту" <%= cargo.payment_method === 'На карту' ? 'selected' : '' %>>На карту</option>
+            <option value="С НДС" <%= cargo.payment_method === 'С НДС' ? 'selected' : '' %>>С НДС</option>
+            <option value="Без НДС" <%= cargo.payment_method === 'Без НДС' ? 'selected' : '' %>>Без НДС</option>
+        </select>
+
+        <input type="submit" value="Сохранить изменения">
+    </form>
+</body>
+</html>
